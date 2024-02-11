@@ -1,0 +1,269 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Todo API
+tags:
+  - name: tasks
+  - name: users
+paths:
+  '/task':
+    get:
+      summary: List all the tasks for a user
+      operationId: listTasks
+      tags: [ tasks ]
+      parameters:
+        - in: header
+          name: userId
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Tasks list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskListResponse'
+    post:
+        summary: Creates new task
+        operationId: createTask
+        tags: [ tasks ]
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskCreateRequest'
+        parameters:
+          - in: header
+            name: userId
+            schema:
+              type: string
+            required: true
+        responses:
+            '201':
+                description: Task created
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/TaskResponse'
+            '401':
+                $ref: '#/components/responses/UnauthorizedError'
+  '/task/{taskId}':
+    get:
+        operationId: getTask
+        summary: Returns task
+        tags: [ tasks ]
+        parameters:
+          - in: header
+            name: userId
+            schema:
+              type: string
+            required: true
+          - name: taskId
+            in: path
+            description: Task identifier
+            required: true
+            schema:
+              type: string
+              format: uuid
+        responses:
+            '200':
+                description: 'Task details'
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/TaskResponse'
+            '401':
+                $ref: '#/components/responses/UnauthorizedError'
+            '403':
+                $ref: '#/components/responses/ForbiddenError'
+            '404':
+                $ref: '#/components/responses/NotFoundError'
+    put:
+        operationId: updateTask
+        summary: Updates existing task
+        tags: [ tasks ]
+        parameters:
+            - in: header
+              name: userId
+              schema:
+                type: string
+              required: true
+            - name: taskId
+              in: path
+              description: Task identifier
+              required: true
+              schema:
+                  type: string
+                  format: uuid
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskUpdateRequest'
+
+        responses:
+            '200':
+                description: 'Updated task'
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/TaskResponse'
+            '401':
+                $ref: '#/components/responses/UnauthorizedError'
+            '403':
+                $ref: '#/components/responses/ForbiddenError'
+            '404':
+                $ref: '#/components/responses/NotFoundError'
+    delete:
+        operationId: deleteTask
+        summary: Deletes the task
+        tags: [ tasks ]
+        parameters:
+            - in: header
+              name: userId
+              schema:
+                type: string
+              required: true
+            - name: taskId
+              in: path
+              description: Task identifier
+              required: true
+              schema:
+                  type: string
+                  format: uuid
+        responses:
+            '204':
+                description: 'Task deleted'
+            
+            '401':
+                $ref: '#/components/responses/UnauthorizedError'
+            '403':
+                $ref: '#/components/responses/ForbiddenError'
+            '404':
+                $ref: '#/components/responses/NotFoundError'
+  '/user/login':
+    post:
+      summary: Authenticate the user
+      operationId: login
+      tags: [ users ]
+      requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserLoginRequest'
+      responses:
+        '200':
+          description: Succesful authentication
+          headers:
+            userId:
+              schema:
+                type: integer
+              description: User identifier
+        '400':
+          description: Request body is invalid
+        '401':
+          description: Password in incorrect
+        '404':
+          description: User doesn\'t exists
+  '/user/register':
+    post:
+      summary: Creates new user
+      operationId: register
+      tags: [ users ]
+      requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRegisterRequest'
+      responses:
+        '200':
+          description: User created
+          headers:
+            userId:
+              schema:
+                type: integer
+              description: User identifier
+        '400':
+          description: Request body is invalid
+        '409': 
+          description: User already exists
+components:
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+    ForbiddenError:
+      description: Resource is forbidden
+    NotFoundError:
+      description: Resource not found
+  schemas:
+    UserLoginRequest:
+      type: object
+      required:
+        - userName
+        - password
+      properties:
+        userName:
+          type: string
+        password:
+          type: string
+    UserRegisterRequest:
+      type: object
+      required:
+        - userName
+        - password
+        - fullName
+      properties:
+        userName:
+          type: string
+        password:
+          type: string
+        fullName:
+          type: string
+    TaskCreateRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        dueDate:
+          type: string
+          format: date
+    TaskUpdateRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        dueDate:
+          type: string
+          format: date
+        isCompleted:
+          type: boolean
+    TaskListResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/TaskResponse'  
+    TaskResponse:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        dueDate:
+          type: string
+          format: date
+        isDone:
+            type: boolean
