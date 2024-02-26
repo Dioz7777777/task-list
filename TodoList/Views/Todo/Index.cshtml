@@ -1,0 +1,41 @@
+@model TodoList.Models.TodoItem[]
+
+@{
+    ViewBag.Title = "title";
+    Layout = "_Layout";
+}
+
+<table class="table">
+    <thead>
+    @if (!Model.Any())
+    {
+        <tr>
+            <td colspan="3">No items found</td>
+        </tr>
+    }
+    else
+    {
+        <tr>
+            <th>Title</th>
+            <th>Due date</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+    }
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Name</td>
+            <td>@item.DueDate</td>
+            <td>@item.IsComplete</td>
+            <td>
+                <a asp-area="" asp-controller="Todo" asp-action="Edit" asp-route-todoId="@item.Id">Edit</a> |
+                <a asp-area="" asp-controller="Todo" asp-action="Complete" asp-route-todoId="@item.Id">Complete</a> |
+                <a asp-area="" asp-controller="Todo" asp-action="Delete" asp-route-todoId="@item.Id">Delete</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

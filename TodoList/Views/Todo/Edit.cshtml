@@ -1,0 +1,25 @@
+@model TodoItem
+
+@{
+    ViewBag.Title = "Edit";
+    Layout = "_Layout";
+}
+
+<h2>Edit</h2>
+
+<form asp-action="Edit" asp-controller="Todo" method="post">
+    <input type="hidden" asp-for="Id"/>
+    <div class="form-group">
+        <label asp-for="Name"></label>
+        <input class="form-control" asp-for="Name"/>
+    </div>
+    <div class="form-group">
+        <label asp-for="DueDate"></label>
+        <input class="form-control" asp-for="DueDate"/>
+    </div>
+    <div class="form-group form-check">
+        <input class="form-check-input" asp-for="IsComplete"/>
+        <label class="form-check-label" asp-for="IsComplete"></label>
+    </div>
+    <button type="submit" class="btn btn-primary">Save changes</button>
+</form>
