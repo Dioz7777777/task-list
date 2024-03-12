@@ -1,0 +1,14 @@
+@model TodoList.Dtos.GetGoogleUserInfoResponse
+
+@{
+    ViewBag.Title = "GoogleUserInfo";
+    Layout = "_Layout";
+}
+
+<h2>User info</h2>
+
+<div>
+    <p><strong>Name:</strong> @Model.Name</p>
+    <p><strong>Email:</strong> @Model.Email</p>
+    <p><strong>Picture:</strong> <img src="@Model.Picture" alt="User picture" /></p>
+</div>

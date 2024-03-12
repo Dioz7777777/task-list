@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TodoList.Data;
@@ -6,16 +7,37 @@ using TodoList.Data.Repositories;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
-                       throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(connectionString));
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-builder.Services.AddScoped<ITodoItemRepository, TodoItemRepository>();
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+var configuration = builder.Configuration;
+
+var connectionString = configuration.GetConnectionString("DefaultConnection") ??
+                       throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+var services = builder.Services;
+services
+    .AddDbContext<ApplicationDbContext>(options => options.UseSqlite(connectionString))
+    .AddDatabaseDeveloperPageExceptionFilter()
+    .AddHttpClient()
+    .AddScoped<ITodoItemRepository, TodoItemRepository>()
+    .AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
-builder.Services.AddControllersWithViews();
+services.AddControllersWithViews();
+
+services
+    .AddAuthentication()
+    .AddGoogle(options =>
+    {
+        options.ClientId = configuration["Authentication:Google:ClientId"] ?? string.Empty;
+        options.ClientSecret = configuration["Authentication:Google:ClientSecret"] ?? string.Empty;
+        options.SaveTokens = true;
+        options.Events.OnCreatingTicket = context =>
+        {
+            var tokens = context.Properties.GetTokens().ToArray();
+            var accessToken = tokens.FirstOrDefault(t => t.Name == "access_token")?.Value;
+            TokenStorage.GoogleAccessToken = accessToken;
+            return Task.CompletedTask;
+        };
+    });
 
 var app = builder.Build();
 
